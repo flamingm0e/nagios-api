@@ -44,7 +44,7 @@ URL_REGEX = re.compile(r'^/(\w+)(?:/([\w\d\.\+\-\s]+)?)?$')
 NAGIOS = None
 NLOG = []
 NLOGLINES = 0
-ALLOW_ORIGIN = None
+ALLOW_ORIGIN = "*"
 PID_FILE = "/var/run/nagios-api.pid"
 CFG_DIRECTORY = "/usr/local/nagios/etc/objects"
 
@@ -54,7 +54,7 @@ def _send_json(req, success, content):
 
     '''
     global ALLOW_ORIGIN
-    out = dumps({ 'success': success, 'content': content }, ensure_ascii=False)
+    out = dumps({'success': success, 'content': content}, ensure_ascii=False)
     headers = {
         'Content-Length': len(out),
         'Content-Type': 'application/json'
@@ -97,8 +97,8 @@ def http_problems(req, objid, reqobj):
 
     hosts = {}
     for host, host_data in NAGIOS.for_json().items():
-        for service,service_data in host_data['services'].items():
-            if (int(service_data['current_state']) == 0):
+        for service, service_data in host_data['services'].items():
+            if int(service_data['current_state']) == 0:
                 del host_data['services'][service]
         if host_data['services']:
             hosts[host] = host_data
@@ -160,7 +160,7 @@ def http_host(req, objid, reqobj):
     ret = {}
     ret['comment'] = []
     ret['downtime'] = []
-    host_keys = [ x for x in dir(NAGIOS.hosts[objid]) if not x.startswith('__') ]
+    host_keys = [x for x in dir(NAGIOS.hosts[objid]) if not x.startswith('__')]
     for host_key in host_keys:
         value = getattr(NAGIOS.hosts[objid], host_key)
         if type(value) == types.StringType:
